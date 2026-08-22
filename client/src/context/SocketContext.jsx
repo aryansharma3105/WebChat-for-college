@@ -22,7 +22,9 @@ export const SocketProvider = ({ children }) => {
       return;
     }
 
-    const socketInstance = io(window.location.origin, {
+    const socketUrl = import.meta.env.VITE_SOCKET_URL || (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : window.location.origin);
+
+    const socketInstance = io(socketUrl, {
       auth: { token },
       transports: ['websocket', 'polling']
     });
@@ -71,3 +73,5 @@ export const useSocket = () => {
   if (!context) throw new Error('useSocket must be used within SocketProvider');
   return context;
 };
+
+export default SocketContext;
