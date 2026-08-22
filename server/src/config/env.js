@@ -15,7 +15,7 @@ export const ENV = {
   JWT_SECRET: process.env.JWT_SECRET || 'super-secret-jwt-key-student-mgmt-2026',
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
-  ADMIN_DEFAULT_ID: process.env.ADMIN_DEFAULT_ID || 'admin-profpankaj25',
+  ADMIN_DEFAULT_ID: process.env.ADMIN_DEFAULT_ID || 'Pankaj1478',
   ADMIN_DEFAULT_PASSWORD: process.env.ADMIN_DEFAULT_PASSWORD || 'pass1225',
   ADMIN_NAME: process.env.ADMIN_NAME || 'Prof. Pankaj Sharma',
   ADMIN_EMAIL: process.env.ADMIN_EMAIL || 'prof.pankaj@university.edu',

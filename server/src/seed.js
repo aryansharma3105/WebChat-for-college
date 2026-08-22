@@ -31,7 +31,7 @@ export const seedDatabase = async () => {
     // 1. Create Default Admin
     // Note: User model pre-save hook will hash password automatically
     const admin = await User.create({
-      customId: ENV.ADMIN_DEFAULT_ID || 'admin-profpankaj25',
+      customId: ENV.ADMIN_DEFAULT_ID || 'Pankaj1478',
       name: ENV.ADMIN_NAME || 'Prof. Pankaj Sharma',
       email: ENV.ADMIN_EMAIL || 'prof.pankaj@university.edu',
       role: 'admin',
