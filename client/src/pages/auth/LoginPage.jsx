@@ -351,6 +351,16 @@ export const LoginPage = () => {
             )}
           </AnimatePresence>
         </div>
+
+        {/* Creator Credits */}
+        <div className="mt-8 text-center text-xs text-slate-500 relative z-10 flex items-center justify-center gap-1.5 font-medium">
+          <span>Crafted with</span>
+          <span className="text-red-500 animate-pulse text-sm">❤️</span>
+          <span>by</span>
+          <span className="text-slate-200 font-bold bg-dark-850 px-2.5 py-0.5 rounded-full border border-dark-700 hover:border-red-500/40 hover:text-red-400 transition-colors shadow-sm">
+            Aryan Sharma
+          </span>
+        </div>
       </motion.div>
     </div>
   );

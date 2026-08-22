@@ -161,6 +161,13 @@ export const Sidebar = ({ isOpen, onClose }) => {
 
         {/* Bottom Area: Collapse toggle & Sign Out */}
         <div className="p-3 border-t border-dark-750/70 space-y-1.5">
+          {/* Creator Credit Signature */}
+          {!collapsed && (
+            <div className="px-2 py-1.5 text-center text-[10px] text-slate-500 font-medium bg-dark-850/60 rounded-xl border border-dark-750/60">
+              Made with <span className="text-red-500">❤️</span> by <span className="font-bold text-slate-300">Aryan Sharma</span>
+            </div>
+          )}
+
           {/* Desktop Collapse Toggle */}
           <button
             onClick={() => setCollapsed(!collapsed)}
