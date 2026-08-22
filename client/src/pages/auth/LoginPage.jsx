@@ -28,8 +28,8 @@ export const LoginPage = () => {
   const { theme, toggleTheme } = useTheme();
 
   const [activeTab, setActiveTab] = useState('admin'); // 'admin' or 'student'
-  const [adminId, setAdminId] = useState('admin-profpankaj25');
-  const [password, setPassword] = useState('pass1225');
+  const [adminId, setAdminId] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -43,9 +43,13 @@ export const LoginPage = () => {
 
   const handleAdminSubmit = async (e) => {
     e.preventDefault();
+    if (!adminId.trim() || !password.trim()) {
+      error('Please enter both Admin ID and Password.');
+      return;
+    }
     setLoading(true);
     try {
-      await loginAdmin(adminId, password);
+      await loginAdmin(adminId.trim(), password);
       success('Welcome back, Professor!');
       navigate('/admin');
     } catch (err) {
@@ -182,17 +186,6 @@ export const LoginPage = () => {
                 exit={{ opacity: 0, x: 10 }}
                 transition={{ duration: 0.2 }}
               >
-                {/* Default Credentials Callout */}
-                <div className="mb-6 p-4 rounded-2xl bg-red-950/40 border border-red-900/50 flex items-start gap-3 shadow-inner-red">
-                  <ShieldCheck className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-                  <div className="text-xs text-slate-300">
-                    <span className="font-bold text-white">Default Admin Credentials:</span>
-                    <div className="mt-1 font-mono text-red-300">
-                      ID: <span className="font-bold text-white">admin-profpankaj25</span> | Password: <span className="font-bold text-white">pass1225</span>
-                    </div>
-                  </div>
-                </div>
-
                 <form onSubmit={handleAdminSubmit} className="space-y-4">
                   <div>
                     <label className="block text-[11px] font-extrabold text-slate-300 uppercase tracking-wider mb-2">
@@ -204,9 +197,9 @@ export const LoginPage = () => {
                         type="text"
                         value={adminId}
                         onChange={(e) => setAdminId(e.target.value)}
-                        placeholder="admin-profpankaj25"
+                        placeholder="Enter Admin ID or university email"
                         required
-                        className="w-full pl-11 pr-4 py-3 bg-dark-800/90 border border-dark-700 rounded-xl text-white text-sm focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none transition-all placeholder:text-slate-600"
+                        className="w-full pl-11 pr-4 py-3 bg-dark-800/90 border border-dark-700 rounded-xl text-white text-sm focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none transition-all placeholder:text-slate-500"
                       />
                     </div>
                   </div>
@@ -272,8 +265,7 @@ export const LoginPage = () => {
                       name="studentName"
                       type="text"
                       placeholder="e.g. Rahul Sharma"
-                      defaultValue="Rahul Sharma"
-                      className="w-full px-4 py-2.5 bg-dark-800/90 border border-dark-700 rounded-xl text-sm text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none placeholder:text-slate-600"
+                      className="w-full px-4 py-2.5 bg-dark-800/90 border border-dark-700 rounded-xl text-sm text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none placeholder:text-slate-500"
                     />
                   </div>
 
@@ -285,9 +277,8 @@ export const LoginPage = () => {
                       name="studentEmail"
                       type="email"
                       placeholder="e.g. rahul.sharma@gmail.com"
-                      defaultValue="rahul.sharma@gmail.com"
                       required
-                      className="w-full px-4 py-2.5 bg-dark-800/90 border border-dark-700 rounded-xl text-sm text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none placeholder:text-slate-600"
+                      className="w-full px-4 py-2.5 bg-dark-800/90 border border-dark-700 rounded-xl text-sm text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none placeholder:text-slate-500"
                     />
                   </div>
 
@@ -303,9 +294,8 @@ export const LoginPage = () => {
                       name="studentPhone"
                       type="tel"
                       placeholder="e.g. +91 98765 43210"
-                      defaultValue="+91 98765 43210"
                       required
-                      className="w-full px-4 py-2.5 bg-dark-800/90 border border-dark-700 rounded-xl text-sm text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none placeholder:text-slate-600 font-mono"
+                      className="w-full px-4 py-2.5 bg-dark-800/90 border border-dark-700 rounded-xl text-sm text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none placeholder:text-slate-500 font-mono"
                     />
                   </div>
 
