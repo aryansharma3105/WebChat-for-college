@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -11,6 +11,7 @@ import {
   Building,
   Save,
   Camera,
+  Upload,
   ShieldCheck,
   AlertCircle
 } from 'lucide-react';
@@ -23,25 +24,52 @@ export const StudentProfile = () => {
   const [department, setDepartment] = useState(user?.department || '');
   const [rollNumber, setRollNumber] = useState(user?.rollNumber || '');
   const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || '');
-  const [avatarFile, setAvatarFile] = useState(null);
+  const [profilePicture, setProfilePicture] = useState(user?.profilePicture || '');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setName(user.name || '');
+      setDepartment(user.department || '');
+      setRollNumber(user.rollNumber || '');
+      setPhoneNumber(user.phoneNumber || '');
+      setProfilePicture(user.profilePicture || '');
+    }
+  }, [user]);
+
+  const handleGalleryUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      error('Please select a valid image file.');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      error('Image size must be under 5MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setProfilePicture(reader.result);
+      success('Photo selected from gallery! Click Save to apply.');
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const formData = new FormData();
-      formData.append('name', name.trim());
-      formData.append('department', department.trim());
-      formData.append('rollNumber', rollNumber.trim());
-      formData.append('phoneNumber', phoneNumber.trim());
-      if (avatarFile) {
-        formData.append('profilePicture', avatarFile);
-      }
-
-      const res = await api.put('/auth/profile', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      const res = await api.put('/auth/profile', {
+        name: name.trim(),
+        department: department.trim(),
+        rollNumber: rollNumber.trim(),
+        phoneNumber: phoneNumber.trim(),
+        profilePicture: profilePicture.trim()
       });
 
       if (res.data.success) {
@@ -65,7 +93,7 @@ export const StudentProfile = () => {
           Student Account Profile
         </h1>
         <p className="text-xs sm:text-sm text-slate-400 mt-1">
-          Manage your student identity, contact number, enrolled cohorts, and personal preferences.
+          Manage your student identity, contact number, enrolled cohorts, and profile photo.
         </p>
       </div>
 
@@ -87,10 +115,10 @@ export const StudentProfile = () => {
           <div className="relative">
             <img
               src={
-                user?.profilePicture ||
-                `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'Student')}&background=dc2626&color=fff`
+                profilePicture ||
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'Student')}&background=dc2626&color=fff`
               }
-              alt={user?.name}
+              alt={name}
               className="w-24 h-24 rounded-full object-cover ring-4 ring-red-500/20 shadow-red-glow-sm"
             />
             <label className="absolute bottom-0 right-0 p-2 bg-red-600 hover:bg-red-500 text-white rounded-full cursor-pointer shadow-red-glow transition-all active:scale-95">
@@ -98,7 +126,7 @@ export const StudentProfile = () => {
               <input
                 type="file"
                 accept="image/*"
-                onChange={(e) => setAvatarFile(e.target.files[0])}
+                onChange={handleGalleryUpload}
                 className="hidden"
               />
             </label>
@@ -106,29 +134,29 @@ export const StudentProfile = () => {
 
           <div>
             <h2 className="text-xl font-black text-white">
-              {user?.name}
+              {name || user?.name}
             </h2>
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-1">
               <p className="text-xs text-slate-400 font-mono flex items-center justify-center sm:justify-start gap-1">
                 <Mail className="w-3.5 h-3.5 text-slate-500" />
                 {user?.email}
               </p>
-              {user?.phoneNumber && (
+              {phoneNumber && (
                 <p className="text-xs text-slate-400 font-mono flex items-center justify-center sm:justify-start gap-1">
                   <Phone className="w-3.5 h-3.5 text-red-500" />
-                  {user.phoneNumber}
+                  {phoneNumber}
                 </p>
               )}
             </div>
 
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-3">
               <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-red-950/60 text-red-400 border border-red-900/50 shadow-red-glow-sm">
-                Roll: {user?.rollNumber || 'STU-NEW'}
+                Roll: {rollNumber || user?.rollNumber || 'STU-NEW'}
               </span>
               <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-dark-800 text-slate-300 border border-dark-700">
-                {user?.department || 'Computer Science & Engineering'}
+                {department || user?.department || 'Computer Science & Engineering'}
               </span>
-              {user?.phoneNumber ? (
+              {phoneNumber ? (
                 <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-950/60 text-emerald-400 border border-emerald-900/50 flex items-center gap-1">
                   <Phone className="w-3 h-3 text-emerald-400" />
                   Contact Verified
@@ -161,7 +189,7 @@ export const StudentProfile = () => {
 
             <div>
               <label className="block text-[11px] font-extrabold text-slate-300 uppercase tracking-wider mb-1.5">
-                Student Gmail (Verified via Google OAuth)
+                Student Email
               </label>
               <input
                 type="email"

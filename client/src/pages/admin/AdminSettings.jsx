@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -14,13 +14,15 @@ import {
   AlertTriangle,
   RefreshCw,
   Camera,
+  Upload,
   CheckCircle2,
   Mail,
   Building2,
   FileCheck,
   HelpCircle,
   Award,
-  MessageSquare
+  MessageSquare,
+  Image as ImageIcon
 } from 'lucide-react';
 
 const AVATAR_PRESETS = [
@@ -35,6 +37,7 @@ const AVATAR_PRESETS = [
 export const AdminSettings = () => {
   const { user, updateUser } = useAuth();
   const { success, error } = useToast();
+  const fileInputRef = useRef(null);
 
   // Profile Edit State
   const [name, setName] = useState(user?.name || '');
@@ -64,6 +67,29 @@ export const AdminSettings = () => {
     }
   }, [user]);
 
+  // Handle Gallery Photo Upload
+  const handleGalleryUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      error('Please select a valid image file (JPG, PNG, WebP).');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      error('Image size must be under 5MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setProfilePicture(reader.result);
+      success('Photo loaded from gallery! Click "Save Profile Changes" to update.');
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
     if (!name.trim() || !customId.trim() || !email.trim()) {
@@ -82,7 +108,7 @@ export const AdminSettings = () => {
       });
 
       if (res.data.success) {
-        success('Admin profile updated successfully!');
+        success('Admin profile and photo updated successfully!');
         updateUser(res.data.user);
       }
     } catch (err) {
@@ -162,7 +188,7 @@ export const AdminSettings = () => {
           Admin Profile & System Authority
         </h1>
         <p className="text-xs sm:text-sm text-slate-400 mt-1">
-          Manage your instructor identity, profile picture, security credentials, and exercise full administrative control over all portal data.
+          Upload your profile photo from gallery, manage admin credentials, and exercise full administrative authority over all portal data.
         </p>
       </div>
 
@@ -170,41 +196,54 @@ export const AdminSettings = () => {
       <div className="bg-dark-850/90 backdrop-blur-xl rounded-3xl p-6 sm:p-8 border border-dark-700/80 shadow-dark-glass">
         <h2 className="text-base font-black text-white mb-6 flex items-center gap-2.5">
           <User className="w-5 h-5 text-red-500" />
-          Admin Profile & Picture
+          Admin Profile & Photo Upload
         </h2>
 
         <form onSubmit={handleProfileUpdate} className="space-y-6">
-          {/* Avatar Preview & Custom URL */}
+          {/* Avatar Preview & Gallery Upload Trigger */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 p-5 rounded-2xl bg-dark-800/80 border border-dark-700">
-            <div className="relative shrink-0">
+            <div className="relative shrink-0 group">
               <img
                 src={
                   profilePicture ||
                   `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'Admin')}&background=dc2626&color=fff`
                 }
                 alt={name}
-                className="w-20 h-20 rounded-full object-cover ring-4 ring-red-500/40 shadow-red-glow-sm"
+                className="w-24 h-24 rounded-full object-cover ring-4 ring-red-500/40 shadow-red-glow-sm transition-transform group-hover:scale-105"
               />
-              <span className="absolute bottom-0 right-0 p-1.5 bg-red-600 rounded-full text-white shadow-sm">
-                <Camera className="w-3.5 h-3.5" />
-              </span>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                title="Upload from gallery"
+                className="absolute bottom-0 right-0 p-2 bg-red-600 hover:bg-red-500 text-white rounded-full shadow-red-glow transition-all active:scale-95 cursor-pointer"
+              >
+                <Camera className="w-4 h-4" />
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleGalleryUpload}
+                className="hidden"
+              />
             </div>
 
-            <div className="space-y-2 flex-1 w-full">
-              <label className="block text-[11px] font-extrabold text-slate-300 uppercase tracking-wider">
-                Profile Picture URL or Choose Avatar
-              </label>
-              <input
-                type="url"
-                value={profilePicture}
-                onChange={(e) => setProfilePicture(e.target.value)}
-                placeholder="https://example.com/my-photo.jpg"
-                className="w-full px-4 py-2 bg-dark-900 border border-dark-700 rounded-xl text-xs text-white focus:border-red-500 focus:outline-none placeholder:text-slate-600 font-mono"
-              />
+            <div className="space-y-3 flex-1 w-full">
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-4 py-2 bg-red-950/60 hover:bg-red-900/60 text-red-300 font-bold text-xs rounded-xl border border-red-800/60 shadow-red-glow-sm transition-all flex items-center gap-2"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  Upload Photo from Gallery / Device
+                </button>
+                <span className="text-[11px] text-slate-500">Supports JPG, PNG, WebP (Max 5MB)</span>
+              </div>
 
               {/* Avatar Preset Badges */}
               <div className="flex items-center gap-2 pt-1 flex-wrap">
-                <span className="text-[10px] text-slate-500 font-bold uppercase">Presets:</span>
+                <span className="text-[10px] text-slate-500 font-bold uppercase">Or Choose Preset:</span>
                 {AVATAR_PRESETS.map((preset, idx) => (
                   <button
                     key={idx}
