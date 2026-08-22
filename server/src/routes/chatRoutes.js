@@ -6,7 +6,9 @@ import {
   getUnreadCount,
   getGroupConversations,
   getGroupMessages,
-  sendGroupMessage
+  sendGroupMessage,
+  deleteMessage,
+  clearAllMessages
 } from '../controllers/chatController.js';
 import { verifyToken, requireAdmin } from '../middleware/auth.js';
 import { upload } from '../middleware/upload.js';
@@ -18,6 +20,8 @@ router.get('/conversations', verifyToken, requireAdmin, getAdminConversations);
 router.get('/unread-count', verifyToken, getUnreadCount);
 router.get('/messages/:studentId', verifyToken, getMessages);
 router.post('/messages/:studentId', verifyToken, upload.single('attachment'), sendMessage);
+router.delete('/messages/:id', verifyToken, deleteMessage);
+router.delete('/clear/all', verifyToken, requireAdmin, clearAllMessages);
 
 // Group Chat Routes
 router.get('/groups', verifyToken, getGroupConversations);

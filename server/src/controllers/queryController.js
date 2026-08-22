@@ -209,3 +209,48 @@ export const updateQueryStatus = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+/**
+ * @route   DELETE /api/queries/:id
+ * @desc    Delete a single query (Admin or Student Owner)
+ * @access  Private
+ */
+export const deleteQuery = async (req, res) => {
+  try {
+    const query = await Query.findById(req.params.id);
+    if (!query) {
+      return res.status(404).json({ success: false, message: 'Query not found.' });
+    }
+
+    // Security check: Only Admin or the student who created it can delete
+    if (req.user.role === 'student' && query.studentId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Access denied.' });
+    }
+
+    await Query.findByIdAndDelete(req.params.id);
+
+    res.json({
+      success: true,
+      message: 'Query ticket deleted successfully.'
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * @route   DELETE /api/queries/clear/all
+ * @desc    Clear all student queries (Admin Only)
+ * @access  Private (Admin Only)
+ */
+export const clearAllQueries = async (req, res) => {
+  try {
+    const result = await Query.deleteMany({});
+    res.json({
+      success: true,
+      message: `Cleared ${result.deletedCount} queries successfully.`
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

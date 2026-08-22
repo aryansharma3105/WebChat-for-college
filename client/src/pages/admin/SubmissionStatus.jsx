@@ -3,6 +3,7 @@ import api from '../../api/axios';
 import { useToast } from '../../context/ToastContext';
 import Badge from '../../components/common/Badge';
 import Modal from '../../components/common/Modal';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
 import EmptyState from '../../components/common/EmptyState';
 import { SkeletonTable } from '../../components/common/SkeletonLoader';
 import {
@@ -16,7 +17,9 @@ import {
   FileCheck,
   Calendar,
   Layers,
-  MessageSquare
+  MessageSquare,
+  Trash2,
+  AlertTriangle
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -41,6 +44,11 @@ export const SubmissionStatus = () => {
   const [gradeMarks, setGradeMarks] = useState('');
   const [gradeFeedback, setGradeFeedback] = useState('');
   const [gradeLoading, setGradeLoading] = useState(false);
+
+  // Deletion States
+  const [subToDelete, setSubToDelete] = useState(null);
+  const [isClearAllOpen, setIsClearAllOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const fetchSubmissions = async () => {
     setLoading(true);
@@ -121,19 +129,64 @@ export const SubmissionStatus = () => {
     }
   };
 
+  const handleDeleteSubmission = async () => {
+    if (!subToDelete) return;
+    setDeleteLoading(true);
+    try {
+      const res = await api.delete(`/submissions/${subToDelete._id}`);
+      if (res.data.success) {
+        success('Submission record deleted successfully.');
+        setSubToDelete(null);
+        fetchSubmissions();
+      }
+    } catch (err) {
+      error(err.response?.data?.message || 'Failed to delete submission');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const handleClearAllSubmissions = async () => {
+    setDeleteLoading(true);
+    try {
+      const res = await api.delete('/submissions/clear/all');
+      if (res.data.success) {
+        success(res.data.message || 'All submissions cleared successfully.');
+        setIsClearAllOpen(false);
+        fetchSubmissions();
+      }
+    } catch (err) {
+      error(err.response?.data?.message || 'Failed to clear submissions');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-black text-white flex items-center gap-2.5">
-          <div className="p-2 bg-emerald-950/60 text-emerald-400 rounded-2xl border border-emerald-900/50 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
-            <CheckCircle className="w-6 h-6" />
-          </div>
-          Submission Compliance Matrix
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-400 mt-1">
-          Monitor student submission compliance across cohorts, review attached files or links, and award marks.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black text-white flex items-center gap-2.5">
+            <div className="p-2 bg-emerald-950/60 text-emerald-400 rounded-2xl border border-emerald-900/50 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+              <CheckCircle className="w-6 h-6" />
+            </div>
+            Submission Compliance Matrix
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+            Monitor student submission compliance across cohorts, review attached files or links, grade work, and remove records anytime.
+          </p>
+        </div>
+
+        {submissions.some((s) => s.status !== 'pending') && (
+          <button
+            onClick={() => setIsClearAllOpen(true)}
+            className="px-4 py-2 bg-red-950/60 hover:bg-red-900/60 text-red-300 font-bold text-xs rounded-xl border border-red-800/60 shadow-red-glow-sm transition-all flex items-center justify-center gap-2 shrink-0 self-start sm:self-auto"
+          >
+            <Trash2 className="w-4 h-4" />
+            Clear All Submissions
+          </button>
+        )}
       </div>
 
       {/* Summary Filter Chips */}
@@ -258,7 +311,7 @@ export const SubmissionStatus = () => {
                   <th className="px-6 py-4">Submitted Time</th>
                   <th className="px-6 py-4">Submission Resource</th>
                   <th className="px-6 py-4">Marks / Grade</th>
-                  <th className="px-6 py-4 text-right">Action</th>
+                  <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-dark-750/60 text-xs">
@@ -356,12 +409,21 @@ export const SubmissionStatus = () => {
 
                       <td className="px-6 py-4 text-right">
                         {!isPending && (
-                          <button
-                            onClick={() => handleOpenGradeModal(sub)}
-                            className="px-3.5 py-1.5 bg-red-950/60 hover:bg-red-900/60 text-red-300 font-bold text-xs rounded-xl border border-red-800/60 shadow-red-glow-sm transition-all"
-                          >
-                            {sub.grade?.marks !== undefined ? 'Edit Grade' : 'Grade'}
-                          </button>
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => handleOpenGradeModal(sub)}
+                              className="px-3 py-1.5 bg-red-950/60 hover:bg-red-900/60 text-red-300 font-bold text-xs rounded-xl border border-red-800/60 shadow-red-glow-sm transition-all"
+                            >
+                              {sub.grade?.marks !== undefined ? 'Edit Grade' : 'Grade'}
+                            </button>
+                            <button
+                              onClick={() => setSubToDelete(sub)}
+                              title="Delete Submission"
+                              className="p-1.5 text-red-400 hover:text-white hover:bg-red-950/60 rounded-xl border border-transparent hover:border-red-800/60 transition-all"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         )}
                       </td>
                     </tr>
@@ -451,6 +513,28 @@ export const SubmissionStatus = () => {
           </form>
         </Modal>
       )}
+
+      {/* Delete Single Submission Dialog */}
+      <ConfirmDialog
+        isOpen={!!subToDelete}
+        onClose={() => setSubToDelete(null)}
+        onConfirm={handleDeleteSubmission}
+        title="Delete Student Submission"
+        message={`Are you sure you want to delete the submission for ${subToDelete?.studentId?.name} on ${subToDelete?.assignmentId?.title}? The student will be able to re-submit.`}
+        confirmText="Delete Submission"
+        loading={deleteLoading}
+      />
+
+      {/* Clear All Submissions Dialog */}
+      <ConfirmDialog
+        isOpen={isClearAllOpen}
+        onClose={() => setIsClearAllOpen(false)}
+        onConfirm={handleClearAllSubmissions}
+        title="Clear All Submissions"
+        message="Are you sure you want to permanently delete all student submissions across all assignments? This will wipe all submitted files and links."
+        confirmText="Clear All Submissions"
+        loading={deleteLoading}
+      />
     </div>
   );
 };

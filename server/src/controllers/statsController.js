@@ -141,3 +141,33 @@ export const getStudentStats = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+/**
+ * @route   POST /api/stats/admin/reset-data
+ * @desc    Clear all temporary student data (submissions, queries, marks, chats)
+ * @access  Private (Admin Only)
+ */
+export const resetSystemData = async (req, res) => {
+  try {
+    const [subRes, qRes, markRes, msgRes, gMsgRes] = await Promise.all([
+      Submission.deleteMany({}),
+      Query.deleteMany({}),
+      Mark.deleteMany({}),
+      Message.deleteMany({}),
+      (await import('../models/GroupMessage.js')).GroupMessage.deleteMany({})
+    ]);
+
+    res.json({
+      success: true,
+      message: 'All submissions, queries, marks, and chat history have been cleared successfully.',
+      details: {
+        submissionsCleared: subRes.deletedCount,
+        queriesCleared: qRes.deletedCount,
+        marksCleared: markRes.deletedCount,
+        messagesCleared: msgRes.deletedCount + gMsgRes.deletedCount
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

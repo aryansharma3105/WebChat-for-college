@@ -3,6 +3,7 @@ import api from '../../api/axios';
 import { useToast } from '../../context/ToastContext';
 import Badge from '../../components/common/Badge';
 import Modal from '../../components/common/Modal';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
 import EmptyState from '../../components/common/EmptyState';
 import { SkeletonTable } from '../../components/common/SkeletonLoader';
 import {
@@ -15,7 +16,8 @@ import {
   AlertCircle,
   Send,
   User,
-  ShieldCheck
+  ShieldCheck,
+  Trash2
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -34,6 +36,11 @@ export const StudentQueries = () => {
   const [replyMessage, setReplyMessage] = useState('');
   const [targetStatus, setTargetStatus] = useState('');
   const [replyLoading, setReplyLoading] = useState(false);
+
+  // Deletion states
+  const [queryToDelete, setQueryToDelete] = useState(null);
+  const [isClearAllOpen, setIsClearAllOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const fetchQueries = async () => {
     setLoading(true);
@@ -110,19 +117,65 @@ export const StudentQueries = () => {
     }
   };
 
+  const handleDeleteQuery = async () => {
+    if (!queryToDelete) return;
+    setDeleteLoading(true);
+    try {
+      const res = await api.delete(`/queries/${queryToDelete._id}`);
+      if (res.data.success) {
+        success('Query ticket deleted successfully.');
+        setQueryToDelete(null);
+        setIsThreadOpen(false);
+        fetchQueries();
+      }
+    } catch (err) {
+      error(err.response?.data?.message || 'Failed to delete query');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const handleClearAllQueries = async () => {
+    setDeleteLoading(true);
+    try {
+      const res = await api.delete('/queries/clear/all');
+      if (res.data.success) {
+        success(res.data.message || 'All queries cleared successfully.');
+        setIsClearAllOpen(false);
+        fetchQueries();
+      }
+    } catch (err) {
+      error(err.response?.data?.message || 'Failed to clear queries');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-black text-white flex items-center gap-2.5">
-          <div className="p-2 bg-red-950/60 text-red-500 rounded-2xl border border-red-900/50 shadow-red-glow-sm">
-            <HelpCircle className="w-6 h-6" />
-          </div>
-          Student Query Desk & Support
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-400 mt-1">
-          Academic support inquiries and tickets submitted by students. Respond directly and update resolution states securely.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black text-white flex items-center gap-2.5">
+            <div className="p-2 bg-red-950/60 text-red-500 rounded-2xl border border-red-900/50 shadow-red-glow-sm">
+              <HelpCircle className="w-6 h-6" />
+            </div>
+            Student Query Desk & Support
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+            Academic support inquiries and tickets submitted by students. Respond directly or remove tickets anytime.
+          </p>
+        </div>
+
+        {queries.length > 0 && (
+          <button
+            onClick={() => setIsClearAllOpen(true)}
+            className="px-4 py-2 bg-red-950/60 hover:bg-red-900/60 text-red-300 font-bold text-xs rounded-xl border border-red-800/60 shadow-red-glow-sm transition-all flex items-center justify-center gap-2 shrink-0 self-start sm:self-auto"
+          >
+            <Trash2 className="w-4 h-4" />
+            Clear All Queries
+          </button>
+        )}
       </div>
 
       {/* Filter Tabs */}
@@ -260,7 +313,7 @@ export const StudentQueries = () => {
                 </div>
               </div>
 
-              <div className="shrink-0">
+              <div className="flex items-center gap-2 shrink-0">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -269,6 +322,16 @@ export const StudentQueries = () => {
                   className="px-3.5 py-1.5 bg-red-950/60 hover:bg-red-900/60 text-red-300 font-bold text-xs rounded-xl border border-red-800/60 shadow-red-glow-sm transition-all"
                 >
                   Open Thread
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setQueryToDelete(q);
+                  }}
+                  title="Delete Query"
+                  className="p-1.5 text-red-400 hover:text-white hover:bg-red-950/60 rounded-xl border border-transparent hover:border-red-800/60 transition-all"
+                >
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -307,18 +370,28 @@ export const StudentQueries = () => {
                   </div>
                 </div>
 
-                <Badge
-                  variant={
-                    selectedQuery.status === 'open'
-                      ? 'danger'
-                      : selectedQuery.status === 'in_progress'
-                      ? 'warning'
-                      : 'success'
-                  }
-                  size="md"
-                >
-                  {selectedQuery.status.replace('_', ' ')}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    variant={
+                      selectedQuery.status === 'open'
+                        ? 'danger'
+                        : selectedQuery.status === 'in_progress'
+                        ? 'warning'
+                        : 'success'
+                    }
+                    size="md"
+                  >
+                    {selectedQuery.status.replace('_', ' ')}
+                  </Badge>
+                  <button
+                    type="button"
+                    onClick={() => setQueryToDelete(selectedQuery)}
+                    title="Delete Ticket"
+                    className="p-1.5 text-red-400 hover:text-white hover:bg-red-950/60 rounded-lg border border-red-900/40 transition-all"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
               <div className="p-3.5 bg-dark-900/90 rounded-xl border border-dark-750 text-xs text-slate-200 leading-relaxed whitespace-pre-wrap">
@@ -414,6 +487,28 @@ export const StudentQueries = () => {
           </div>
         </Modal>
       )}
+
+      {/* Delete Single Query Dialog */}
+      <ConfirmDialog
+        isOpen={!!queryToDelete}
+        onClose={() => setQueryToDelete(null)}
+        onConfirm={handleDeleteQuery}
+        title="Delete Query Ticket"
+        message={`Are you sure you want to delete the query "${queryToDelete?.subject}" from ${queryToDelete?.studentId?.name}?`}
+        confirmText="Delete Ticket"
+        loading={deleteLoading}
+      />
+
+      {/* Clear All Queries Dialog */}
+      <ConfirmDialog
+        isOpen={isClearAllOpen}
+        onClose={() => setIsClearAllOpen(false)}
+        onConfirm={handleClearAllQueries}
+        title="Clear All Student Queries"
+        message="Are you sure you want to permanently delete all student queries and replies? This action cannot be undone."
+        confirmText="Clear All Queries"
+        loading={deleteLoading}
+      />
     </div>
   );
 };

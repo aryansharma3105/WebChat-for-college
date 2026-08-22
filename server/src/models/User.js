@@ -55,7 +55,6 @@ const userSchema = new mongoose.Schema(
     },
     phoneNumber: {
       type: String,
-      sparse: true,
       trim: true,
       default: undefined
     },

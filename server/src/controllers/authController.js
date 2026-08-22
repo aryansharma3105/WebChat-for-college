@@ -275,7 +275,7 @@ export const getMe = async (req, res) => {
  */
 export const updateProfile = async (req, res) => {
   try {
-    const { name, department, rollNumber, phoneNumber } = req.body;
+    const { name, department, rollNumber, phoneNumber, profilePicture, email, customId } = req.body;
     const user = await User.findById(req.user._id);
 
     if (!user) {
@@ -283,8 +283,40 @@ export const updateProfile = async (req, res) => {
     }
 
     if (name) user.name = name.trim();
-    if (department) user.department = department.trim();
-    if (rollNumber) user.rollNumber = rollNumber.trim();
+    if (department !== undefined) user.department = department.trim();
+    if (rollNumber !== undefined) user.rollNumber = rollNumber.trim();
+    if (profilePicture !== undefined) user.profilePicture = profilePicture.trim();
+
+    // If Admin, allow updating Admin ID (customId) and Email
+    if (user.role === 'admin') {
+      if (customId && customId.trim() !== user.customId) {
+        const existingAdminId = await User.findOne({
+          customId: customId.trim(),
+          _id: { $ne: user._id }
+        });
+        if (existingAdminId) {
+          return res.status(400).json({
+            success: false,
+            message: 'This Admin ID is already taken. Please choose another.'
+          });
+        }
+        user.customId = customId.trim();
+      }
+
+      if (email && email.trim().toLowerCase() !== user.email) {
+        const existingEmail = await User.findOne({
+          email: email.trim().toLowerCase(),
+          _id: { $ne: user._id }
+        });
+        if (existingEmail) {
+          return res.status(400).json({
+            success: false,
+            message: 'This email address is already in use.'
+          });
+        }
+        user.email = email.trim().toLowerCase();
+      }
+    }
 
     if (phoneNumber !== undefined) {
       const cleanPhone = phoneNumber ? phoneNumber.trim() : '';

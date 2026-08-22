@@ -349,3 +349,52 @@ export const sendGroupMessage = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+/**
+ * @route   DELETE /api/chat/messages/:id
+ * @desc    Delete a direct message
+ * @access  Private (Admin or Sender)
+ */
+export const deleteMessage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const msg = await Message.findById(id);
+    if (!msg) {
+      return res.status(404).json({ success: false, message: 'Message not found.' });
+    }
+
+    if (req.user.role !== 'admin' && msg.senderId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Permission denied.' });
+    }
+
+    await Message.findByIdAndDelete(id);
+
+    res.json({
+      success: true,
+      message: 'Message deleted successfully.'
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * @route   DELETE /api/chat/clear/all
+ * @desc    Clear all chat messages (1-on-1 & Group) (Admin Only)
+ * @access  Private (Admin Only)
+ */
+export const clearAllMessages = async (req, res) => {
+  try {
+    const [d1, d2] = await Promise.all([
+      Message.deleteMany({}),
+      GroupMessage.deleteMany({})
+    ]);
+
+    res.json({
+      success: true,
+      message: `Cleared ${d1.deletedCount + d2.deletedCount} chat messages successfully.`
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

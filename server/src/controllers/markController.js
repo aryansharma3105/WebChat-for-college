@@ -203,3 +203,20 @@ export const deleteMark = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+/**
+ * @route   DELETE /api/marks/clear/all
+ * @desc    Clear all student marks (Admin Only)
+ * @access  Private (Admin Only)
+ */
+export const clearAllMarks = async (req, res) => {
+  try {
+    const result = await Mark.deleteMany({});
+    res.json({
+      success: true,
+      message: `Cleared ${result.deletedCount} marks records successfully.`
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

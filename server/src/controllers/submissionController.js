@@ -288,3 +288,44 @@ export const gradeSubmission = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+/**
+ * @route   DELETE /api/submissions/:id
+ * @desc    Delete a single submission (Admin Only)
+ * @access  Private (Admin Only)
+ */
+export const deleteSubmission = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const submission = await Submission.findById(id);
+    if (!submission) {
+      return res.status(404).json({ success: false, message: 'Submission not found.' });
+    }
+
+    await Submission.findByIdAndDelete(id);
+
+    res.json({
+      success: true,
+      message: 'Submission deleted successfully.'
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * @route   DELETE /api/submissions/clear/all
+ * @desc    Clear all student submissions (Admin Only)
+ * @access  Private (Admin Only)
+ */
+export const clearAllSubmissions = async (req, res) => {
+  try {
+    const result = await Submission.deleteMany({});
+    res.json({
+      success: true,
+      message: `Cleared ${result.deletedCount} submissions successfully.`
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
