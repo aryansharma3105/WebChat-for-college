@@ -59,6 +59,27 @@ export const StudentDashboard = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
+      {/* Missing Mobile Number Notice Banner */}
+      {!user?.phoneNumber && (
+        <div className="p-4 rounded-2xl bg-amber-950/40 border border-amber-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-dark-glass">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-bold text-amber-300">Action Required: Register Mobile Number</p>
+              <p className="text-[11px] text-amber-200/80 mt-0.5">
+                You haven't linked your contact mobile number yet. Please update your profile so your instructor can reach you.
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/student/profile"
+            className="px-3.5 py-1.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-bold text-xs rounded-xl shadow-red-glow transition-all shrink-0 active:scale-95"
+          >
+            Update Mobile No. →
+          </Link>
+        </div>
+      )}
+
       {/* Student Welcome Banner */}
       <div className="relative p-6 sm:p-8 rounded-3xl overflow-hidden bg-dark-850/90 border border-dark-700/80 shadow-dark-glass">
         {/* Ambient glows */}

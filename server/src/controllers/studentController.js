@@ -20,7 +20,8 @@ export const getAllStudents = async (req, res) => {
       query.$or = [
         { name: searchRegex },
         { email: searchRegex },
-        { rollNumber: searchRegex }
+        { rollNumber: searchRegex },
+        { phoneNumber: searchRegex }
       ];
     }
 

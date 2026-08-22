@@ -48,6 +48,7 @@ export const seedDatabase = async () => {
         name: 'Rahul Sharma',
         email: 'rahul.sharma@gmail.com',
         rollNumber: 'CS2026-001',
+        phoneNumber: '+91 98765 43210',
         department: 'Computer Science & Engineering',
         profilePicture: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80'
       },
@@ -55,6 +56,7 @@ export const seedDatabase = async () => {
         name: 'Priya Singh',
         email: 'priya.singh@gmail.com',
         rollNumber: 'CS2026-002',
+        phoneNumber: '+91 98765 43211',
         department: 'Computer Science & Engineering',
         profilePicture: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80'
       },
@@ -62,6 +64,7 @@ export const seedDatabase = async () => {
         name: 'Aman Kumar',
         email: 'aman.kumar@gmail.com',
         rollNumber: 'CS2026-003',
+        phoneNumber: '+91 98765 43212',
         department: 'Information Technology',
         profilePicture: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
       },
@@ -69,6 +72,7 @@ export const seedDatabase = async () => {
         name: 'Sneha Patel',
         email: 'sneha.patel@gmail.com',
         rollNumber: 'CS2026-004',
+        phoneNumber: '+91 98765 43213',
         department: 'Computer Science & Engineering',
         profilePicture: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&auto=format&fit=crop&q=80'
       },
@@ -76,6 +80,7 @@ export const seedDatabase = async () => {
         name: 'Rohan Gupta',
         email: 'rohan.gupta@gmail.com',
         rollNumber: 'CS2026-005',
+        phoneNumber: '+91 98765 43214',
         department: 'Data Science',
         profilePicture: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80'
       },
@@ -83,6 +88,7 @@ export const seedDatabase = async () => {
         name: 'Ananya Verma',
         email: 'ananya.verma@gmail.com',
         rollNumber: 'CS2026-006',
+        phoneNumber: '+91 98765 43215',
         department: 'Information Technology',
         profilePicture: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80'
       }

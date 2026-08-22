@@ -145,6 +145,7 @@ export const googleAuth = async (req, res) => {
         profilePicture: student.profilePicture,
         rollNumber: student.rollNumber,
         department: student.department,
+        phoneNumber: student.phoneNumber,
         enrolledGroups: student.enrolledGroups
       }
     });
@@ -197,6 +198,7 @@ export const demoStudentLogin = async (req, res) => {
         profilePicture: student.profilePicture,
         rollNumber: student.rollNumber,
         department: student.department,
+        phoneNumber: student.phoneNumber,
         enrolledGroups: student.enrolledGroups
       }
     });
@@ -235,6 +237,7 @@ export const getMe = async (req, res) => {
         profilePicture: user.profilePicture,
         rollNumber: user.rollNumber,
         department: user.department,
+        phoneNumber: user.phoneNumber,
         enrolledGroups: user.enrolledGroups,
         createdAt: user.createdAt
       }
@@ -254,16 +257,36 @@ export const getMe = async (req, res) => {
  */
 export const updateProfile = async (req, res) => {
   try {
-    const { name, department, rollNumber } = req.body;
+    const { name, department, rollNumber, phoneNumber } = req.body;
     const user = await User.findById(req.user._id);
 
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    if (name) user.name = name;
-    if (department) user.department = department;
-    if (rollNumber) user.rollNumber = rollNumber;
+    if (name) user.name = name.trim();
+    if (department) user.department = department.trim();
+    if (rollNumber) user.rollNumber = rollNumber.trim();
+
+    if (phoneNumber !== undefined) {
+      const cleanPhone = phoneNumber ? phoneNumber.trim() : '';
+      if (cleanPhone) {
+        // Validate uniqueness: check if another user already has this phone number
+        const existing = await User.findOne({
+          phoneNumber: cleanPhone,
+          _id: { $ne: user._id }
+        });
+        if (existing) {
+          return res.status(400).json({
+            success: false,
+            message: 'This mobile number is already registered by another student.'
+          });
+        }
+        user.phoneNumber = cleanPhone;
+      } else {
+        user.phoneNumber = undefined;
+      }
+    }
 
     if (req.file) {
       user.profilePicture = `/uploads/avatars/${req.file.filename}`;
@@ -282,7 +305,8 @@ export const updateProfile = async (req, res) => {
         role: user.role,
         profilePicture: user.profilePicture,
         rollNumber: user.rollNumber,
-        department: user.department
+        department: user.department,
+        phoneNumber: user.phoneNumber
       }
     });
   } catch (error) {

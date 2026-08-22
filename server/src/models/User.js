@@ -53,6 +53,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: ''
     },
+    phoneNumber: {
+      type: String,
+      sparse: true,
+      trim: true,
+      default: undefined
+    },
     isActive: {
       type: Boolean,
       default: true
@@ -64,6 +70,10 @@ const userSchema = new mongoose.Schema(
     toObject: { virtuals: true }
   }
 );
+
+// Enforce unique non-null phone numbers
+userSchema.index({ phoneNumber: 1 }, { unique: true, sparse: true });
+
 
 // Hash password before save
 userSchema.pre('save', async function (next) {
