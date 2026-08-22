@@ -75,7 +75,7 @@ export const adminLogin = async (req, res) => {
  */
 export const googleAuth = async (req, res) => {
   try {
-    const { credential, email, name, picture, sub } = req.body;
+    const { credential, email, name, picture, sub, phoneNumber } = req.body;
 
     let studentEmail = email;
     let studentName = name;
@@ -108,6 +108,20 @@ export const googleAuth = async (req, res) => {
 
     let student = await User.findOne({ email: studentEmail.toLowerCase() });
 
+    if (phoneNumber) {
+      const cleanPhone = phoneNumber.trim();
+      const existingPhone = await User.findOne({
+        phoneNumber: cleanPhone,
+        _id: { $ne: student?._id }
+      });
+      if (existingPhone) {
+        return res.status(400).json({
+          success: false,
+          message: 'This mobile number is already registered by another student.'
+        });
+      }
+    }
+
     if (!student) {
       // Create new student
       student = await User.create({
@@ -116,15 +130,19 @@ export const googleAuth = async (req, res) => {
         role: 'student',
         googleId: googleId || `google-${Date.now()}`,
         profilePicture: studentPicture,
+        phoneNumber: phoneNumber ? phoneNumber.trim() : undefined,
         rollNumber: `STU-${Math.floor(100000 + Math.random() * 900000)}`
       });
     } else {
-      // Update profile picture and googleId if changed
+      // Update profile picture, googleId, and phoneNumber if changed
       if (studentPicture && !student.profilePicture) {
         student.profilePicture = studentPicture;
       }
       if (googleId && !student.googleId) {
         student.googleId = googleId;
+      }
+      if (phoneNumber && !student.phoneNumber) {
+        student.phoneNumber = phoneNumber.trim();
       }
       await student.save();
     }

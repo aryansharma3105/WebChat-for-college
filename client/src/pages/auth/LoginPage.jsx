@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   Lock,
   User,
+  Phone,
   Eye,
   EyeOff,
   Sun,
@@ -71,18 +72,25 @@ export const LoginPage = () => {
     e.preventDefault();
     const studentEmail = e.target.studentEmail.value.trim();
     const studentName = e.target.studentName.value.trim() || 'Student User';
+    const studentPhone = e.target.studentPhone?.value?.trim();
 
     if (!studentEmail) {
       error('Please enter an email address');
       return;
     }
 
+    if (!studentPhone) {
+      error('Mobile number is mandatory. Please enter your contact number.');
+      return;
+    }
+
     setLoading(true);
     try {
-      // Simulate Google OAuth payload
+      // Simulate Google OAuth payload with required mobile number
       await loginGoogle({
         email: studentEmail,
         name: studentName,
+        phoneNumber: studentPhone,
         picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(studentName)}&background=dc2626&color=fff`,
         sub: `google-${Date.now()}`
       });
@@ -271,7 +279,7 @@ export const LoginPage = () => {
 
                   <div>
                     <label className="block text-[11px] font-extrabold text-slate-300 uppercase tracking-wider mb-1.5">
-                      Student Gmail Address
+                      Student Gmail Address *
                     </label>
                     <input
                       name="studentEmail"
@@ -280,6 +288,24 @@ export const LoginPage = () => {
                       defaultValue="rahul.sharma@gmail.com"
                       required
                       className="w-full px-4 py-2.5 bg-dark-800/90 border border-dark-700 rounded-xl text-sm text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none placeholder:text-slate-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-extrabold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                      <span className="flex items-center gap-1">
+                        <Phone className="w-3.5 h-3.5 text-red-500" />
+                        Mobile / Contact Number *
+                      </span>
+                      <span className="text-[10px] text-red-400 font-bold lowercase">(required for contact)</span>
+                    </label>
+                    <input
+                      name="studentPhone"
+                      type="tel"
+                      placeholder="e.g. +91 98765 43210"
+                      defaultValue="+91 98765 43210"
+                      required
+                      className="w-full px-4 py-2.5 bg-dark-800/90 border border-dark-700 rounded-xl text-sm text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none placeholder:text-slate-600 font-mono"
                     />
                   </div>
 
